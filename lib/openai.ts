@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { INTEGRATIONS_PROMPT_LIST } from "./integrations";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -12,7 +13,11 @@ Return ONLY valid JSON with this exact shape:
   "suggested_integrations": ["Tool1", "Tool2", "Tool3"]
 }
 
-For suggested_integrations: list the real tools/platforms this agent would need to connect to in order to function (e.g. Gmail, Slack, Shopify, Twitter, Notion, Stripe). Be specific. List 2-5 integrations max. These are NOT built yet — just what the agent would need.
+For suggested_integrations: you MUST only pick from the following known integrations. Do NOT suggest integrations outside this list. Pick the 2-5 most relevant ones.
+
+${INTEGRATIONS_PROMPT_LIST}
+
+These integrations are NOT built yet — just indicate which ones the agent would need.
 
 Do not include any explanation, preamble, or markdown. Return raw JSON only.`;
 

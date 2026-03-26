@@ -19,7 +19,7 @@ No predefined agents. No catalog. No developer required.
 - **Framework**: Next.js 14 (App Router)
 - **Styling**: Tailwind CSS
 - **Database**: Supabase (Postgres + pgvector)
-- **AI Synthesis**: Anthropic API (claude-sonnet-4-20250514)
+- **AI Synthesis**: OpenAI API (GPT-4o)
 - **Embeddings**: OpenAI (text-embedding-3-small)
 - **Deployment**: Vercel
 
@@ -30,13 +30,12 @@ No predefined agents. No catalog. No developer required.
 ```bash
 npx create-next-app forge
 cd forge
-npm install @supabase/supabase-js openai @anthropic-ai/sdk
+npm install @supabase/supabase-js openai
 ```
 
 Create a `.env.local` file:
 
 ```
-ANTHROPIC_API_KEY=
 OPENAI_API_KEY=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
@@ -124,7 +123,7 @@ forge/
 │   └── IntegrationBadge.tsx     # Greyed-out integration chip
 ├── lib/
 │   ├── supabase.ts               # Supabase client
-│   ├── anthropic.ts              # Anthropic client
+│   ├── openai.ts                 # OpenAI synthesis client
 │   └── embeddings.ts             # OpenAI embeddings helper
 └── README.md
 ```
@@ -143,7 +142,7 @@ Forge is an agent synthesis and registry platform. The core loop is:
 2. Generate a vector embedding of the prompt (OpenAI text-embedding-3-small)
 3. Run cosine similarity search against the Supabase agent registry using pgvector
 4. If similarity score is above 0.75: return the existing agent, increment its `uses` count, set `is_new: false`
-5. If below threshold: call Claude (claude-sonnet-4-20250514) to synthesize a new agent definition, embed it, save it to Supabase, return it with `is_new: true`
+5. If below threshold: call OpenAI (GPT-4o) to synthesize a new agent definition, embed it, save it to Supabase, return it with `is_new: true`
 
 That's the entire product. Build everything else around that loop.
 
@@ -179,9 +178,9 @@ Logic order:
 1. Generate embedding for prompt
 2. Call `match_agents` Supabase function
 3. If match: increment uses, return with `is_new: false`
-4. If no match: synthesize via Claude, embed, insert to Supabase, return with `is_new: true`
+4. If no match: synthesize via OpenAI, embed, insert to Supabase, return with `is_new: true`
 
-Claude system prompt for synthesis:
+OpenAI system prompt for synthesis:
 ```
 You are an agent architect. Given a user's description of what they need, produce a structured agent definition.
 
@@ -193,7 +192,7 @@ Return ONLY valid JSON with this exact shape:
   "suggested_integrations": ["Tool1", "Tool2", "Tool3"]
 }
 
-For suggested_integrations: list the real tools/platforms this agent would need to connect to in order to function (e.g. Gmail, Slack, Shopify, Twitter, Notion, Stripe). Be specific. List 2-5 integrations max. These are NOT built yet — just what the agent would need.
+For suggested_integrations: you MUST only pick from the known integrations defined in lib/integrations.ts. Do NOT suggest integrations outside that list. Pick the 2-5 most relevant ones.
 
 Do not include any explanation, preamble, or markdown. Return raw JSON only.
 ```
@@ -283,7 +282,7 @@ Do this in order, do not skip ahead:
 
 ### Error handling rules
 
-- Claude synthesis fails: return error message to user, do not save anything to registry
+- OpenAI synthesis fails: return error message to user, do not save anything to registry
 - Embedding fails: still synthesize the agent but skip dedup, log a warning
 - Supabase down: synthesize and return agent without saving, tell the user it wasn't saved
 - Always return something useful to the user, never a blank screen
