@@ -60,7 +60,10 @@ export async function POST(req: NextRequest) {
       description: agentDef.description,
       use_cases: agentDef.use_cases,
       suggested_integrations: agentDef.suggested_integrations,
+      estimated_monthly_cost: agentDef.estimated_monthly_cost || null,
+      complexity: agentDef.complexity || "moderate",
       original_prompt: prompt,
+      workflow_steps: agentDef.workflow_steps || null,
       uses: 1,
     };
 
@@ -81,6 +84,9 @@ export async function POST(req: NextRequest) {
         agent: {
           id: crypto.randomUUID(),
           ...agentDef,
+          estimated_monthly_cost: agentDef.estimated_monthly_cost || null,
+          complexity: agentDef.complexity || "moderate",
+          workflow_steps: agentDef.workflow_steps || null,
           original_prompt: prompt,
           created_at: new Date().toISOString(),
           uses: 1,

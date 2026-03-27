@@ -6,7 +6,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("agents")
     .select(
-      "id, name, description, use_cases, suggested_integrations, original_prompt, created_at, uses"
+      "id, name, description, use_cases, suggested_integrations, estimated_monthly_cost, complexity, original_prompt, created_at, uses, workflow_steps"
     )
     .order("created_at", { ascending: false });
 

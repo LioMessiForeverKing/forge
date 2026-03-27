@@ -57,7 +57,10 @@ create table agents (
   description text not null,
   use_cases text[] not null default '{}',
   suggested_integrations text[] not null default '{}',
+  estimated_monthly_cost integer,
+  complexity text default 'moderate',
   original_prompt text not null,
+  workflow_steps jsonb,
   embedding vector(1536),
   created_at timestamp with time zone default now(),
   uses integer default 1
@@ -76,7 +79,10 @@ returns table (
   description text,
   use_cases text[],
   suggested_integrations text[],
+  estimated_monthly_cost integer,
+  complexity text,
   original_prompt text,
+  workflow_steps jsonb,
   created_at timestamp with time zone,
   uses integer,
   similarity float
@@ -89,7 +95,10 @@ as $$
     agents.description,
     agents.use_cases,
     agents.suggested_integrations,
+    agents.estimated_monthly_cost,
+    agents.complexity,
     agents.original_prompt,
+    agents.workflow_steps,
     agents.created_at,
     agents.uses,
     1 - (agents.embedding <=> query_embedding) as similarity
